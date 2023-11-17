@@ -1,4 +1,5 @@
 <script lang="ts">
+    import CardInput from './lib/CardInput.svelte';
   import Greet from './lib/Greet.svelte'
 </script>
 
@@ -7,5 +8,6 @@
     w-96
   </div>
   <button class="bg-blue-700 px-4 py-2 text-white hover:bg-sky-800 sm:px-8 sm:py-3"></button>
+  <CardInput />
   <Greet />
 </main>
