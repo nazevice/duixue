@@ -17,12 +17,13 @@
     character: '',
     pinyin: '',
     translation: '',
-    file_base64: ''
+    file_path: '',
     };
 
     const addCard = async () => {
-        formCard.file_base64 = await readFileAsBase64(file);
-        let greetMsg = await invoke("add_card", {card: formCard})
+        let fileBase64 = await readFileAsBase64(file);
+        formCard.file_path = file ? file.name : '';
+        let greetMsg = await invoke("add_card", {card: formCard, fileBase64: fileBase64})
     }
 </script>
 <div class="w-9/12">
