@@ -6,6 +6,12 @@ use serde::{Serialize, Deserialize};
 use reqwest::header::HeaderValue;
 use supabase_storage::Storage;
 use serde_json;
+use std::sync::{Arc, Mutex};
+use tauri::State;
+
+struct ClientTable {
+    client: Postgrest
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 struct FormCard {
@@ -13,6 +19,12 @@ struct FormCard {
     pinyin: String,
     translation: String,
     file_path: String
+}
+
+#[derive(Serialize)]
+struct CardDeck {
+    name: String,
+    description: String,
 }
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -57,13 +69,32 @@ async fn add_card(mut card: FormCard, file_base64: String) -> String {
     format!("Second response: {:?}", response_insert)
 }
 
+#[tauri::command]
+async fn get_card_decks(state: State<'_,ClientTable>) -> Result<String, ()> {
+    let response = state.client
+            .from("card_decks")
+            .select("*")
+            .execute()
+            .await
+            .expect("Failed to execute query");
+    
+    println!("test {:?}", response);
+    println!("Response: {:?}", response.text().await.unwrap());
+    Ok(format!("Data from backend"))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     dotenv().ok();
+    let client = Postgrest::new("https://gybhoyqqcrvxwbsqfzpi.supabase.co/rest/v1")
+    .insert_header(
+        "apikey",
+        env::var("SUPABASE_KEY").unwrap());
     tauri::Builder::default()
+        .manage(ClientTable{ client: client})
         .plugin(tauri_plugin_window::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet, add_card])
+        .invoke_handler(tauri::generate_handler![greet, add_card, get_card_decks])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
