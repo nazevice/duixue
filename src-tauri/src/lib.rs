@@ -71,7 +71,7 @@ async fn add_card(mut card: FormCard, file_base64: String) -> String {
 
 #[tauri::command]
 async fn get_card_decks(state: State<'_,ClientTable>) -> Result<String, ()> {
-    let response = state.client
+    let response: reqwest::Response = state.client
             .from("card_decks")
             .select("*")
             .execute()
@@ -79,8 +79,8 @@ async fn get_card_decks(state: State<'_,ClientTable>) -> Result<String, ()> {
             .expect("Failed to execute query");
     
     println!("test {:?}", response);
-    println!("Response: {:?}", response.text().await.unwrap());
-    Ok(format!("Data from backend"))
+    //println!("Response: {:?}", response.text().await.unwrap());
+    Ok(response.text().await.unwrap())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
