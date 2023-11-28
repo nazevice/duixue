@@ -72,16 +72,32 @@ async fn add_card(mut card: FormCard, file_base64: String) -> String {
 #[tauri::command]
 async fn get_card_decks(state: State<'_,ClientTable>) -> Result<String, ()> {
     let response: reqwest::Response = state.client
-            .from("card_decks")
+            .from("decks")
             .select("*")
             .execute()
             .await
             .expect("Failed to execute query");
     
     println!("test {:?}", response);
-    //println!("Response: {:?}", response.text().await.unwrap());
+    //println!("Response: {:?}", &response.text().await.unwrap());
     Ok(response.text().await.unwrap())
 }
+
+#[tauri::command]
+async fn get_cards(deck_id: i16, state: State<'_,ClientTable>) -> Result<String, ()> {
+    let response: reqwest::Response = state.client
+            .from("cards")
+            .select("*")
+            .eq("deck_id", deck_id.to_string())
+            .execute()
+            .await
+            .expect("Failed to execute query");
+    
+    println!("test {:?}", response);
+    //println!("Response: {:?}", &response.text().await.unwrap());
+    Ok(response.text().await.unwrap())
+}
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -94,7 +110,7 @@ pub fn run() {
         .manage(ClientTable{ client: client})
         .plugin(tauri_plugin_window::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet, add_card, get_card_decks])
+        .invoke_handler(tauri::generate_handler![greet, add_card, get_card_decks, get_cards])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
